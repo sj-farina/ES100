@@ -7,12 +7,14 @@
 #define MOTOR1B 5
 #define JOINT1 A0
 #define PRESS1 A7
+#define PRESS2 A6
 
 void setup() {
   pinMode(MOTOR1A, OUTPUT);
   pinMode(MOTOR1B, OUTPUT);
   pinMode(JOINT1, INPUT);
   pinMode(PRESS1, INPUT);
+  pinMode(PRESS2, INPUT);
   Serial.begin(9600);
 }
 
@@ -35,10 +37,13 @@ void motorstop() {
 
 void loop() {
   int potValue = analogRead(JOINT1);
-  int pressValue = analogRead(PRESS1);
+  int pressValue1 = analogRead(PRESS1);
+  int pressValue2 = analogRead(PRESS2);
   Serial.print(potValue);
   Serial.print(',');
-  Serial.println(pressValue);
+  Serial.print(pressValue1);
+  Serial.print(',');
+  Serial.println(pressValue2);
   if (potValue > 100){
     forward();
   }
@@ -47,5 +52,6 @@ void loop() {
   }
   delay(100);
 }
+
 
 
