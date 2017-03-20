@@ -1,12 +1,10 @@
-#include "linreg.h"
 #define MOTOR1A 6
 #define MOTOR1B 5
 #define JOINT1 A0
 #define PRESS1 A7
 
-int buff_len = 4;
-
-int reg_buff[] = {2, 4, 8, 3, 6};
+int buff_len = 10;
+int reg_buff[] = {0,0,0,0,0,0,0,0,0,0};
 
 
 void setup() {
@@ -38,19 +36,20 @@ void motorstop() {
 void loop() {
   int potValue = analogRead(JOINT1);
   int pressValue = analogRead(PRESS1);
-  Serial.println(potValue);
+//  Serial.println(potValue);
 
-  for(int i = 0; i < buff_len; i++){
+  for(int i = 0; i < buff_len -1; i++){
     reg_buff[i] = reg_buff[i+1];
   }
-  reg_buff[buff_len] = potValue;
-  
-  Serial.print(reg_buff[0]); Serial.print(',');
-  Serial.print(reg_buff[1]); Serial.print(',');
-  Serial.print(reg_buff[2]); Serial.print(',');
-  Serial.print(reg_buff[3]); Serial.print(',');
-  Serial.println(reg_buff[4]);
+  reg_buff[buff_len -1] = potValue;
 
+  for(int i = 0; i < buff_len -1; i++){
+    Serial.print(reg_buff[i]);
+    Serial.print(',');
+  }  
+    Serial.println(' ');
+
+  
   //Serial.print(',');
   //Serial.println(pressValue);
   if (potValue > 100){

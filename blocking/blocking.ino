@@ -2,7 +2,6 @@
  * Janey Farina
  * ES 100
  * Haptic Glove finger tracking test 2
- * Rotation (dv/dt) sense only, no preasure 
  *************************************/
 
 
@@ -28,9 +27,7 @@
 #define NO_TOUCH 0
 
 int refAngle;
-
-int buff_len = 10;
-int reg_buff[] = {0,0,0,0,0,0,0,0,0,0};
+int zone;
 
 void setup() {
   pinMode(TOP_PRESS_PIN, INPUT);
@@ -44,6 +41,7 @@ void setup() {
   Serial.begin(9600);
 
   refAngle = 600;
+  zone = FREE;
 }
 
 
@@ -56,7 +54,7 @@ void loop() {
   int angle = analogRead(JOINT_POT_PIN);
   int topPress = analogRead(TOP_PRESS_PIN);
   int lowPress = analogRead(LOW_PRESS_PIN);
-  int slope = findSlope(angle);
+  zone = getZone(angle);
 
   Serial.print(angle);
   Serial.print(",");
@@ -68,18 +66,31 @@ void loop() {
 //  Serial.print(",");
   Serial.print(lowPress);
   Serial.print(",");  
-  Serial.print(",");  
-  Serial.println(slope);
+//  Serial.println(zone * 500);
 
-  if (slope > 0){
-    forward(50);
+
+
+  if (zone == FREE){
+
+    if (topPress < 900 || lowPress < 900){
+      forward(100);
+      Serial.println(500);
+    }
+    else{
+      Serial.println(250);
+      motorstop();
+    }
   }
-  else if (slope < 0){
-    reverse(60);
+  else if (zone == BLOCK){
+//      Serial.println("blocks");
+  Serial.println(0);
+
+    reverse(200);
   }
   else{
     motorstop();
   }
+
   
   delay(10);
 }
@@ -88,18 +99,16 @@ void loop() {
 // Magic Functions
 //////////////////////////////////////////////////////////////////////////////
 
-int findSlope(int potValue){
-  for(int i = 0; i < buff_len - 1; i++){
-    reg_buff[i] = reg_buff[i+1];
+
+int getZone(int angle){
+  if (angle > refAngle){
+    return BLOCK;
+    
   }
-  reg_buff[buff_len - 1] = potValue;
-  
-  int slope1 = reg_buff[buff_len/2 - 1] - reg_buff[0];
-  int slope2 = reg_buff[buff_len - 1] - reg_buff[buff_len/2 - 1];
-
-  return (slope1+slope2)/2;
+  else{
+    return FREE;
+  }
 }
-
 
 
 //////////////////////////////////////////////////////////////////////////////
