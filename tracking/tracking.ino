@@ -64,18 +64,16 @@ void loop() {
   Serial.print(",");  
   Serial.print(topPress);
   Serial.print(",");  
-//  Serial.print(topPress);
-//  Serial.print(",");
   Serial.print(lowPress);
   Serial.print(",");  
   Serial.print(",");  
   Serial.println(slope);
 
   if (slope > 0){
-    forward(50);
+    forward(60);
   }
   else if (slope < 0){
-    reverse(60);
+    reverse(70);
   }
   else{
     motorstop();

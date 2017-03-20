@@ -1,7 +1,8 @@
 /*************************************
  * Janey Farina
  * ES 100
- * Haptic Glove finger blocking test 1
+ * Haptic Glove 
+ * tracking and blocking combined for demo
  *************************************/
 
 
@@ -21,7 +22,7 @@
 #define ENCODER_PIN_B A2
 
 // Zone definitions
-#define FREE 1
+#define TRACK 1
 #define BLOCK 0
 #define TOUCH 1
 #define NO_TOUCH 0
@@ -29,7 +30,11 @@
 #define FLAG_LOW 0
 
 int refAngle;
+int zone;
 int debounce; 
+
+int buff_len = 10;
+int reg_buff[] = {0,0,0,0,0,0,0,0,0,0};
 
 void setup() {
   pinMode(TOP_PRESS_PIN, INPUT);
@@ -42,8 +47,10 @@ void setup() {
   
   Serial.begin(9600);
 
-  refAngle = 600;
+  refAngle = 700;
+  zone = TRACK;
   debounce = FLAG_LOW;
+
 }
 
 
@@ -56,6 +63,9 @@ void loop() {
   int angle = analogRead(JOINT_POT_PIN);
   int topPress = analogRead(TOP_PRESS_PIN);
   int lowPress = analogRead(LOW_PRESS_PIN);
+  zone = getZone(angle);
+  int slope = findSlope(angle);
+
 
   Serial.print(angle);
   Serial.print(",");
@@ -69,14 +79,31 @@ void loop() {
   Serial.print(",");  
 //  Serial.println(zone * 500);
 
-  if (angle > refAngle){
-    reverse(200);
-    debounce = FLAG_HIGH;
+  if (zone == TRACK){
+    if (slope > 0){
+      forward(60);
+    }
+    else if (slope < 0){
+      reverse(70);
+    }
+    else{
+      motorstop();
+    }
   }
-  if (angle < refAngle - 1){
+  else if (zone == BLOCK){
+    if (angle > refAngle){
+      reverse(200);
+      debounce = FLAG_HIGH;
+    }
+    if (angle < refAngle - 10){
+      motorstop();
+      debounce = FLAG_LOW;
+    }
+  }
+  else{
     motorstop();
-    debounce = FLAG_LOW;
   }
+
   
   delay(10);
 }
@@ -84,6 +111,30 @@ void loop() {
 //////////////////////////////////////////////////////////////////////////////
 // Magic Functions
 //////////////////////////////////////////////////////////////////////////////
+
+
+int getZone(int angle){
+  if (angle > refAngle){
+    return BLOCK;
+  }
+  else{
+    return TRACK;
+  }
+}
+
+
+int findSlope(int potValue){
+  for(int i = 0; i < buff_len - 1; i++){
+    reg_buff[i] = reg_buff[i+1];
+  }
+  reg_buff[buff_len - 1] = potValue;
+  
+  int slope1 = reg_buff[buff_len/2 - 1] - reg_buff[0];
+  int slope2 = reg_buff[buff_len - 1] - reg_buff[buff_len/2 - 1];
+
+  return (slope1+slope2)/2;
+}
+
 
 
 //////////////////////////////////////////////////////////////////////////////
